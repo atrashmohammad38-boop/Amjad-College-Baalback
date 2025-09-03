@@ -267,6 +267,20 @@
             background: transparent;
         }
         
+        /* Loading spinner */
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+        }
+        
+        /* Toast notification */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        
         @media (max-width: 768px) {
             .stats-box .number {
                 font-size: 1.8rem;
@@ -279,10 +293,19 @@
             .logo-text {
                 font-size: 2rem;
             }
+            
+            .toast-container {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Toast container for notifications -->
+    <div class="toast-container"></div>
+
     <!-- Login Screen -->
     <div id="loginScreen">
         <div class="container">
@@ -300,14 +323,18 @@
                 
                 <form id="loginForm">
                     <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
-                        <input type="text" class="form-control" id="username" required>
+                        <label for="username" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="username" required placeholder="name@example.com">
                     </div>
                     <div class="mb-3">
                         <label for="password" class="form-label">Password</label>
                         <input type="password" class="form-control" id="password" required>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Login</button>
+                    <button type="submit" class="btn btn-primary w-100" id="loginButton">
+                        <span class="login-text">Login</span>
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+                    </button>
+                    <div class="alert alert-danger mt-3" role="alert" id="loginError" style="display: none;"></div>
                 </form>
             </div>
         </div>
@@ -331,28 +358,28 @@
                 <div class="col-md-3">
                     <div class="stats-box">
                         <i class="fas fa-users"></i>
-                        <div class="number">542</div>
+                        <div class="number" id="totalStudents">0</div>
                         <div class="label">Total Students</div>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stats-box">
                         <i class="fas fa-chalkboard-teacher"></i>
-                        <div class="number">28</div>
+                        <div class="number" id="totalTeachers">0</div>
                         <div class="label">Total Teachers</div>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stats-box">
                         <i class="fas fa-user-check"></i>
-                        <div class="number">96%</div>
+                        <div class="number" id="attendanceRate">0%</div>
                         <div class="label">Today's Attendance</div>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stats-box">
                         <i class="fas fa-clock"></i>
-                        <div class="number">17</div>
+                        <div class="number" id="lateToday">0</div>
                         <div class="label">Late Today</div>
                     </div>
                 </div>
@@ -365,10 +392,10 @@
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <span>Today's Attendance</span>
                             <div>
-                                <button class="btn btn-sm btn-light">
+                                <button class="btn btn-sm btn-light" id="printBtn">
                                     <i class="fas fa-print"></i>
                                 </button>
-                                <button class="btn btn-sm btn-light">
+                                <button class="btn btn-sm btn-light" id="downloadBtn">
                                     <i class="fas fa-download"></i>
                                 </button>
                             </div>
@@ -385,76 +412,22 @@
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Ahmed Hassan</td>
-                                            <td>Student</td>
-                                            <td>08:15 AM</td>
-                                            <td><span class="badge badge-present">Present</span></td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Layla Mahmoud</td>
-                                            <td>Student</td>
-                                            <td>09:30 AM</td>
-                                            <td><span class="badge badge-late">Late</span></td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Omar Khalil</td>
-                                            <td>Teacher</td>
-                                            <td>07:50 AM</td>
-                                            <td><span class="badge badge-present">Present</span></td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Rana Zayed</td>
-                                            <td>Supervisor</td>
-                                            <td>08:00 AM</td>
-                                            <td><span class="badge badge-present">Present</span></td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Karim Jamil</td>
-                                            <td>Student</td>
-                                            <td>-</td>
-                                            <td><span class="badge badge-absent">Absent</span></td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
+                                    <tbody id="attendanceTableBody">
+                                        <!-- Attendance data will be loaded here -->
                                     </tbody>
                                 </table>
                             </div>
                             
                             <div class="d-flex justify-content-between align-items-center mt-3">
                                 <div>
-                                    <button class="btn btn-primary">
+                                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRecordModal">
                                         <i class="fas fa-plus"></i> Add Record
                                     </button>
                                     <button class="btn btn-warning">
                                         <i class="fas fa-paper-plane"></i> Send Notifications
                                     </button>
                                 </div>
-                                <button class="btn btn-outline-primary">
+                                <button class="btn btn-outline-primary" id="viewAllBtn">
                                     View All <i class="fas fa-arrow-right"></i>
                                 </button>
                             </div>
@@ -468,38 +441,8 @@
                         <div class="card-header">
                             Recent Activity
                         </div>
-                        <div class="card-body">
-                            <div class="notification-item">
-                                <div class="d-flex justify-content-between">
-                                    <h6>Attendance Taken</h6>
-                                    <span class="notification-time">10:30 AM</span>
-                                </div>
-                                <p class="small mb-0">Mr. Hassan took attendance for Grade 10-A</p>
-                            </div>
-                            
-                            <div class="notification-item">
-                                <div class="d-flex justify-content-between">
-                                    <h6>Late Arrival</h6>
-                                    <span class="notification-time">09:15 AM</span>
-                                </div>
-                                <p class="small mb-0">5 students marked late for first period</p>
-                            </div>
-                            
-                            <div class="notification-item">
-                                <div class="d-flex justify-content-between">
-                                    <h6>Absence Reported</h6>
-                                    <span class="notification-time">08:45 AM</span>
-                                </div>
-                                <p class="small mb-0">3 students reported absent today</p>
-                            </div>
-                            
-                            <div class="notification-item">
-                                <div class="d-flex justify-content-between">
-                                    <h6>Notification Sent</h6>
-                                    <span class="notification-time">08:30 AM</span>
-                                </div>
-                                <p class="small mb-0">Absence notifications sent to parents</p>
-                            </div>
+                        <div class="card-body" id="recentActivity">
+                            <!-- Recent activity will be loaded here -->
                         </div>
                     </div>
                     
@@ -510,16 +453,16 @@
                         </div>
                         <div class="card-body">
                             <div class="d-grid gap-2">
-                                <button class="btn btn-outline-primary text-start">
+                                <button class="btn btn-outline-primary text-start" data-section="attendance">
                                     <i class="fas fa-calendar-check me-2"></i> Take Attendance
                                 </button>
-                                <button class="btn btn-outline-primary text-start">
+                                <button class="btn btn-outline-primary text-start" data-bs-toggle="modal" data-bs-target="#addStudentModal">
                                     <i class="fas fa-user-plus me-2"></i> Add New Student
                                 </button>
-                                <button class="btn btn-outline-primary text-start">
+                                <button class="btn btn-outline-primary text-start" data-bs-toggle="modal" data-bs-target="#addTeacherModal">
                                     <i class="fas fa-chalkboard-teacher me-2"></i> Add New Teacher
                                 </button>
-                                <button class="btn btn-outline-primary text-start">
+                                <button class="btn btn-outline-primary text-start" id="exportBtn">
                                     <i class="fas fa-file-export me-2"></i> Export Reports
                                 </button>
                             </div>
@@ -543,7 +486,7 @@
                                             <i class="fas fa-envelope fa-2x text-primary mb-3"></i>
                                             <h5>Email Notifications</h5>
                                             <p class="small">Send absence/late notifications via email</p>
-                                            <button class="btn btn-primary">
+                                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#emailModal">
                                                 <i class="fas fa-paper-plane"></i> Send Email
                                             </button>
                                         </div>
@@ -555,7 +498,7 @@
                                             <i class="fas fa-sms fa-2x text-primary mb-3"></i>
                                             <h5>SMS Notifications</h5>
                                             <p class="small">Send absence/late notifications via SMS</p>
-                                            <button class="btn btn-primary">
+                                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#smsModal">
                                                 <i class="fas fa-paper-plane"></i> Send SMS
                                             </button>
                                         </div>
@@ -569,36 +512,540 @@
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Role selection
-            const roleOptions = document.querySelectorAll('.role-option');
-            roleOptions.forEach(option => {
-                option.addEventListener('click', function() {
-                    roleOptions.forEach(o => o.classList.remove('active'));
-                    this.classList.add('active');
-                });
-            });
+    <!-- Add Record Modal -->
+    <div class="modal fade" id="addRecordModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Attendance Record</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Person</label>
+                        <select class="form-select" id="recordPerson">
+                            <option value="">Select a person</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" id="recordStatus">
+                            <option value="present">Present</option>
+                            <option value="absent">Absent</option>
+                            <option value="late">Late</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Time</label>
+                        <input type="time" class="form-control" id="recordTime">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveRecordBtn">Save Record</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Student Modal -->
+    <div class="modal fade" id="addStudentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Student</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="studentName">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Class</label>
+                        <input type="text" class="form-control" id="studentClass">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="studentPhone">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="studentEmail">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveStudentBtn">Save Student</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Teacher Modal -->
+    <div class="modal fade" id="addTeacherModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Teacher</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="teacherName">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Subject</label>
+                        <input type="text" class="form-control" id="teacherSubject">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="teacherPhone">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="teacherEmail">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveTeacherBtn">Save Teacher</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Email Modal -->
+    <div class="modal fade" id="emailModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Send Email Notification</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Recipients</label>
+                        <select class="form-select">
+                            <option>All Absent Today</option>
+                            <option>All Late Today</option>
+                            <option>All Students</option>
+                            <option>All Teachers</option>
+                            <option>Custom Selection</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Subject</label>
+                        <input type="text" class="form-control" value="Attendance Notification">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Message</label>
+                        <textarea class="form-control" rows="5">Dear Parent/Guardian,
+
+This is to inform you that your child was absent/late today.
+
+Please contact the school for more information.
+
+Regards,
+Amjad Baalbeck Administration
+                        </textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary">Send Email</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- SMS Modal -->
+    <div class="modal fade" id="smsModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Send SMS Notification</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Recipients</label>
+                        <select class="form-select">
+                            <option>All Absent Today</option>
+                            <option>All Late Today</option>
+                            <option>All Students</option>
+                            <option>All Teachers</option>
+                            <option>Custom Selection</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Message</label>
+                        <textarea class="form-control" rows="3" maxlength="160">Dear Parent, your child was absent/late today. Please contact the school for details.</textarea>
+                        <div class="form-text">160 characters maximum</div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary">Send SMS</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Firebase SDKs + App Logic -->
+    <script type="module">
+        // Firebase imports (v12 modules)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-analytics.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+        import {
+            getFirestore, collection, addDoc, getDocs, getDoc, doc,
+            query, where, orderBy, serverTimestamp, limit
+        } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+        // Your Firebase config (from your project amjad-attendance-6)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCRKlsEn4KhSmcIvo2N_YH9SDXjYS6DGi0",
+            authDomain: "amjad-attendance-6.firebaseapp.com",
+            projectId: "amjad-attendance-6",
+            storageBucket: "amjad-attendance-6.firebasestorage.app",
+            messagingSenderId: "820031615244",
+            appId: "1:820031615244:web:c38056902e3bd8b2e91929",
+            measurementId: "G-0Z15NYG3DL"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        try { getAnalytics(app); } catch(e) { /* analytics may require https */ }
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // ===== Helpers =====
+        function yyyymmddLocal(date = new Date()) {
+            const tzoffset = date.getTimezoneOffset() * 60000;
+            const localISO = new Date(date - tzoffset).toISOString().slice(0, 10);
+            return localISO;
+        }
+
+        function showToast(message, type = 'success') {
+            const toastContainer = document.querySelector('.toast-container');
+            const toastId = 'toast-' + Date.now();
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
+            toast.id = toastId;
             
-            // Login form submission
-            const loginForm = document.getElementById('loginForm');
-            loginForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const username = document.getElementById('username').value;
-                const password = document.getElementById('password').value;
-                const selectedRole = document.querySelector('.role-option.active').getAttribute('data-role');
-                
-                // Simple validation
-                if (username && password) {
-                    // Hide login, show app
-                    document.getElementById('loginScreen').style.display = 'none';
-                    document.getElementById('appScreen').style.display = 'block';
-                    
-                    // Update UI based on role
-                    document.getElementById('dashboardRole').textContent = selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1);
-                }
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+            
+            toast.addEventListener('hidden.bs.toast', () => {
+                toast.remove();
             });
+        }
+
+        // Role selection pills
+        const roleOptions = document.querySelectorAll('.role-option');
+        roleOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                roleOptions.forEach(o => o.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // ===== Auth & Login =====
+        const loginForm = document.getElementById('loginForm');
+        const loginButton = document.getElementById('loginButton');
+        const loginText = loginButton.querySelector('.login-text');
+        const loginSpinner = loginButton.querySelector('.spinner-border-sm');
+        const loginError = document.getElementById('loginError');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = (document.getElementById('username').value || '').trim();
+            const password = document.getElementById('password').value;
+            const selectedRole = document.querySelector('.role-option.active').getAttribute('data-role');
+
+            if (!email || !password) return;
+
+            loginText.style.display = 'none';
+            loginSpinner.style.display = 'inline-block';
+            loginError.style.display = 'none';
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                // Show app
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('appScreen').style.display = 'block';
+                document.getElementById('dashboardRole').textContent = selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1);
+                showToast('Login successful!');
+                await loadAllData();
+            } catch (error) {
+                console.error('Login error:', error);
+                loginError.textContent = error.message;
+                loginError.style.display = 'block';
+            } finally {
+                loginText.style.display = 'inline-block';
+                loginSpinner.style.display = 'none';
+            }
+        });
+
+        // Keep UI if already logged in
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('appScreen').style.display = 'block';
+                await loadAllData();
+            } else {
+                document.getElementById('loginScreen').style.display = 'block';
+                document.getElementById('appScreen').style.display = 'none';
+            }
+        });
+
+        // ===== Firestore Data Loaders =====
+        async function loadAllData() {
+            await Promise.all([
+                loadCountsAndTodayAttendance(),
+                populatePeopleOptions(),
+                loadRecentActivity()
+            ]);
+        }
+
+        async function loadCountsAndTodayAttendance() {
+            try {
+                const [studentsSnap, teachersSnap] = await Promise.all([
+                    getDocs(collection(db, 'students')),
+                    getDocs(collection(db, 'teachers'))
+                ]);
+
+                // Counts
+                const totalStudents = studentsSnap.size;
+                const totalTeachers = teachersSnap.size;
+                document.getElementById('totalStudents').textContent = totalStudents;
+                document.getElementById('totalTeachers').textContent = totalTeachers;
+
+                // Today's attendance
+                const today = yyyymmddLocal();
+                const attendanceQ = query(
+                    collection(db, 'attendance'),
+                    where('date', '==', today),
+                    orderBy('timestamp', 'desc')
+                );
+                const attendanceSnap = await getDocs(attendanceQ);
+
+                let presentCount = 0;
+                let lateCount = 0;
+                const tbody = document.getElementById('attendanceTableBody');
+                tbody.innerHTML = '';
+
+                attendanceSnap.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const status = data.status || 'absent';
+                    if (status === 'present') presentCount++;
+                    if (status === 'late') lateCount++;
+
+                    const badgeClass = status === 'present' ? 'badge-present' : status === 'late' ? 'badge-late' : 'badge-absent';
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${data.name || '-'}</td>
+                        <td>${data.role || '-'}</td>
+                        <td>${data.time || '-'}</td>
+                        <td><span class="badge ${badgeClass}">${status.charAt(0).toUpperCase() + status.slice(1)}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" title="Edit (not implemented)">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                const totalPeople = totalStudents + totalTeachers;
+                const attendanceRate = totalPeople > 0 ? Math.round((presentCount / totalPeople) * 100) : 0;
+                document.getElementById('attendanceRate').textContent = `${attendanceRate}%`;
+                document.getElementById('lateToday').textContent = lateCount;
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                showToast('Error loading data', 'danger');
+            }
+        }
+
+        async function populatePeopleOptions() {
+            const select = document.getElementById('recordPerson');
+            select.innerHTML = '<option value="">Select a person</option>';
+
+            const [studentsSnap, teachersSnap] = await Promise.all([
+                getDocs(collection(db, 'students')),
+                getDocs(collection(db, 'teachers'))
+            ]);
+
+            studentsSnap.forEach((d) => {
+                const s = d.data();
+                const opt = document.createElement('option');
+                opt.value = `students:${d.id}`;
+                opt.textContent = `${s.name} (Student${s.class ? ' - ' + s.class : ''})`;
+                select.appendChild(opt);
+            });
+
+            teachersSnap.forEach((d) => {
+                const t = d.data();
+                const opt = document.createElement('option');
+                opt.value = `teachers:${d.id}`;
+                opt.textContent = `${t.name} (Teacher${t.subject ? ' - ' + t.subject : ''})`;
+                select.appendChild(opt);
+            });
+        }
+
+        async function loadRecentActivity() {
+            try {
+                const today = yyyymmddLocal();
+                const qy = query(
+                    collection(db, 'attendance'),
+                    where('date', '==', today),
+                    orderBy('timestamp', 'desc'),
+                    limit(8)
+                );
+                const snap = await getDocs(qy);
+                const container = document.getElementById('recentActivity');
+                container.innerHTML = '';
+                if (snap.empty) {
+                    container.innerHTML = '<p class="text-muted mb-0">No activity yet today.</p>';
+                    return;
+                }
+                snap.forEach((d) => {
+                    const a = d.data();
+                    const div = document.createElement('div');
+                    div.className = 'notification-item';
+                    div.innerHTML = `
+                        <div><strong>${a.name || 'Unknown'}</strong> marked <strong>${(a.status || '').toUpperCase()}</strong></div>
+                        <div class="notification-time">${a.time || ''}</div>
+                    `;
+                    container.appendChild(div);
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        // ===== Actions: Save Attendance / Add Student / Add Teacher =====
+        document.getElementById('saveRecordBtn').addEventListener('click', async () => {
+            const value = document.getElementById('recordPerson').value;
+            const status = document.getElementById('recordStatus').value;
+            const time = document.getElementById('recordTime').value;
+            if (!value) {
+                showToast('Please select a person', 'danger');
+                return;
+            }
+            const [collectionName, id] = value.split(':');
+            try {
+                const ref = doc(db, collectionName, id);
+                const snap = await getDoc(ref);
+                if (!snap.exists()) {
+                    showToast('Selected person not found', 'danger');
+                    return;
+                }
+                const data = snap.data();
+                const today = yyyymmddLocal();
+                await addDoc(collection(db, 'attendance'), {
+                    personId: id,
+                    personType: collectionName === 'students' ? 'student' : 'teacher',
+                    name: data.name || '',
+                    role: collectionName === 'students' ? 'Student' : 'Teacher',
+                    status,
+                    time: time || new Date().toLocaleTimeString(),
+                    date: today,
+                    timestamp: serverTimestamp()
+                });
+                showToast('Attendance record saved successfully');
+                bootstrap.Modal.getInstance(document.getElementById('addRecordModal')).hide();
+                await loadAllData();
+            } catch (error) {
+                console.error('Error saving record:', error);
+                showToast('Error saving record', 'danger');
+            }
+        });
+
+        document.getElementById('saveStudentBtn').addEventListener('click', async () => {
+            const name = document.getElementById('studentName').value.trim();
+            const studentClass = document.getElementById('studentClass').value.trim();
+            const phone = document.getElementById('studentPhone').value.trim();
+            const email = document.getElementById('studentEmail').value.trim();
+            if (!name || !studentClass) {
+                showToast('Please fill in all required fields', 'danger');
+                return;
+            }
+            try {
+                await addDoc(collection(db, 'students'), {
+                    name, class: studentClass, phone, email, createdAt: serverTimestamp()
+                });
+                showToast('Student added successfully');
+                bootstrap.Modal.getInstance(document.getElementById('addStudentModal')).hide();
+                await loadAllData();
+            } catch (error) {
+                console.error('Error adding student:', error);
+                showToast('Error adding student', 'danger');
+            }
+        });
+
+        document.getElementById('saveTeacherBtn').addEventListener('click', async () => {
+            const name = document.getElementById('teacherName').value.trim();
+            const subject = document.getElementById('teacherSubject').value.trim();
+            const phone = document.getElementById('teacherPhone').value.trim();
+            const email = document.getElementById('teacherEmail').value.trim();
+            if (!name || !subject) {
+                showToast('Please fill in all required fields', 'danger');
+                return;
+            }
+            try {
+                await addDoc(collection(db, 'teachers'), {
+                    name, subject, phone, email, createdAt: serverTimestamp()
+                });
+                showToast('Teacher added successfully');
+                bootstrap.Modal.getInstance(document.getElementById('addTeacherModal')).hide();
+                await loadAllData();
+            } catch (error) {
+                console.error('Error adding teacher:', error);
+                showToast('Error adding teacher', 'danger');
+            }
+        });
+
+        // ===== Simple Export/Print Hooks =====
+        document.getElementById('printBtn').addEventListener('click', () => window.print());
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            // Simple CSV export for today's attendance
+            const rows = [['Name','Role','Time','Status']];
+            document.querySelectorAll('#attendanceTableBody tr').forEach(tr => {
+                const cells = Array.from(tr.querySelectorAll('td')).map(td => td.innerText.replace(/,/g, ' '));
+                rows.push([cells[0], cells[1], cells[2], cells[3]]);
+            });
+            const csv = rows.map(r => r.join(',')).join('\n');
+            const blob = new Blob([csv], {type: 'text/csv'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `attendance_${yyyymmddLocal()}.csv`; 
+            a.click();
+        });
+
+        document.getElementById('viewAllBtn').addEventListener('click', () => {
+            showToast('View All not implemented in demo', 'danger');
         });
     </script>
 </body>
 </html>
+
